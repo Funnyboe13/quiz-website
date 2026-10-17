@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Student Quiz{% endblock %}</title>
+    <style>
+        :root {
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+            --bg: #f0f5f4;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --danger: #dc2626;
+            --success: #15803d;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: var(--bg); color: var(--text); }
+        header { background: var(--primary); color: white; padding: 18px 24px; }
+        header h1 { margin: 0; font-size: 22px; }
+        header a { color: white; text-decoration: none; }
+        main { max-width: 800px; margin: 28px auto; padding: 0 16px; }
+        .card { background: var(--card); border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+        .crumbs { color: var(--muted); margin-bottom: 16px; font-size: 14px; }
+        .crumbs a { color: var(--primary); text-decoration: none; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+        .tile { display: block; background: var(--card); border-radius: 12px; padding: 22px; text-decoration: none; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 6px solid var(--primary); }
+        .tile:hover { background: #f7fbfa; }
+        .tile h3 { margin: 0 0 6px 0; color: var(--primary); }
+        .tile p { margin: 0; color: var(--muted); font-size: 14px; }
+
+        .btn { display: inline-block; padding: 12px 22px; border-radius: 8px; border: none; background: var(--primary); color: white; text-decoration: none; font-size: 16px; cursor: pointer; }
+        .btn:hover { background: var(--primary-dark); }
+        .link-muted { color: var(--muted); margin-left: 12px; text-decoration: none; }
+
+        .question { margin-bottom: 26px; }
+        .question h3 { margin: 0 0 10px 0; }
+        .option { display: block; padding: 10px 14px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+        .option:hover { background: #f7fbfa; border-color: var(--primary); }
+        .option input { margin-right: 10px; }
+
+        .score { text-align: center; }
+        .score .big { font-size: 48px; font-weight: 700; color: var(--primary); }
+        .review.right { border-left: 6px solid var(--success); }
+        .review.wrong { border-left: 6px solid var(--danger); }
+        .tag-right { color: var(--success); font-weight: 600; }
+        .tag-wrong { color: var(--danger); font-weight: 600; }
+        .explain { background: #f3f4f6; border-radius: 8px; padding: 10px 14px; margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><a href="{% url 'subject_list' %}">📚 Student Quiz</a></h1>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

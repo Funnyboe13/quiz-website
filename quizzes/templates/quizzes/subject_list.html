@@ -1,0 +1,15 @@
+{% extends 'quizzes/base.html' %}
+
+{% block content %}
+<h2>Choose a subject</h2>
+<div class="grid">
+    {% for subject in subjects %}
+    <a class="tile" href="{% url 'topic_list' subject.pk %}">
+        <h3>{{ subject.name }}</h3>
+        <p>{{ subject.topics.count }} topic{{ subject.topics.count|pluralize }}</p>
+    </a>
+    {% empty %}
+    <p>No subjects yet. Add some in the admin.</p>
+    {% endfor %}
+</div>
+{% endblock %}
