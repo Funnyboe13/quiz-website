@@ -1,17 +1,22 @@
 # Student Quiz
 
-A Django web app where students practice science subjects with multiple-choice quizzes. Pick a subject, pick a topic, answer the questions, and get a score with a review of every answer.
+A Django web app where students practice science subjects with multiple-choice quizzes. Students create an account, pick a subject and topic, answer the questions, and get an instant score with a full review. Every result is saved, so students can track their progress over time.
 
 ![Subjects page](screenshot-subjects.png)
 ![Results page](screenshot-results.png)
+![My results page](screenshot-my-results.png)
 
 ## Features
 
+- Student accounts: sign up, log in, and log out
+- Welcome popup that appears after logging in or signing up
 - Subjects (Physics, Chemistry, Biology), each with its own topics
 - Multiple-choice questions with one correct answer
+- Quizzes and results are only available to logged-in students
 - Instant score and percentage after submitting
 - Review page showing your answer, the correct answer, and an explanation
-- Admin panel to add subjects, topics, questions, and choices (all four options on one page)
+- Score history on a "My results" page, with colored badges for good, average, and low scores
+- Admin panel to add subjects, topics, questions (all four choices on one page), and to view every student's attempts
 
 ## Built with
 
@@ -54,13 +59,14 @@ A Django web app where students practice science subjects with multiple-choice q
    python manage.py runserver
 ```
 
-6. Open http://127.0.0.1:8000/admin, add subjects, topics, and questions, then visit http://127.0.0.1:8000 to take a quiz
+6. Open http://127.0.0.1:8000/admin, log in, and add subjects, topics, and questions. Then visit http://127.0.0.1:8000, create a student account, and take a quiz.
 
 ## Future improvements
 
-- Student accounts with saved score history
 - Random question order
 - Timed quizzes
+- Leaderboard for top scores
+- Live deployment
 
 ## Author
 
