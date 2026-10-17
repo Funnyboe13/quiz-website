@@ -1,0 +1,37 @@
+{% extends 'quizzes/base.html' %}
+
+{% block title %}My results{% endblock %}
+
+{% block content %}
+<h2>My results</h2>
+
+{% if attempts %}
+<div class="card">
+    <table class="results-table">
+        <tr>
+            <th>Date</th>
+            <th>Subject</th>
+            <th>Topic</th>
+            <th>Score</th>
+        </tr>
+        {% for a in attempts %}
+        <tr>
+            <td>{{ a.taken_at|date:"d M Y, H:i" }}</td>
+            <td>{{ a.topic.subject.name }}</td>
+            <td>{{ a.topic.name }}</td>
+            <td>
+                <span class="pill {% if a.percent >= 70 %}good{% elif a.percent >= 50 %}ok{% else %}low{% endif %}">
+                    {{ a.score }} / {{ a.total }} ({{ a.percent }}%)
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% else %}
+<div class="card">
+    <p>You haven't taken any quizzes yet.</p>
+    <a class="btn" href="{% url 'subject_list' %}">Start a quiz</a>
+</div>
+{% endif %}
+{% endblock %}

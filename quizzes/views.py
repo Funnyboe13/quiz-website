@@ -1,5 +1,33 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Subject, Topic
+from django.contrib import messages
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.views import LoginView
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.cache import never_cache
+from .models import Subject, Topic, Attempt
+
+
+class CustomLoginView(LoginView):
+    template_name = 'quizzes/login.html'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f"Welcome back, {form.get_user().username}!")
+        return response
+
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            auth_login(request, user)
+            messages.success(request, f"Welcome, {user.username}! Your account has been created.")
+            return redirect('subject_list')
+    else:
+        form = UserCreationForm()
+    return render(request, 'quizzes/signup.html', {'form': form})
 
 
 def subject_list(request):
@@ -13,6 +41,8 @@ def topic_list(request, pk):
     return render(request, 'quizzes/topic_list.html', {'subject': subject, 'topics': topics})
 
 
+@never_cache
+@login_required
 def take_quiz(request, pk):
     topic = get_object_or_404(Topic, pk=pk)
     questions = list(topic.questions.prefetch_related('choices'))
@@ -37,6 +67,10 @@ def take_quiz(request, pk):
             })
         total = len(results)
         percent = round(score / total * 100) if total else 0
+
+        if total:
+            Attempt.objects.create(user=request.user, topic=topic, score=score, total=total)
+
         return render(request, 'quizzes/result.html', {
             'topic': topic,
             'results': results,
@@ -47,4 +81,9 @@ def take_quiz(request, pk):
 
     return render(request, 'quizzes/quiz.html', {'topic': topic, 'questions': questions})
 
-# Create your views here.
+
+@never_cache
+@login_required
+def my_results(request):
+    attempts = Attempt.objects.filter(user=request.user).select_related('topic__subject')
+    return render(request, 'quizzes/my_results.html', {'attempts': attempts})

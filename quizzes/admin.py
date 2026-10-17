@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Subject, Topic, Question, Choice
+from .models import Subject, Topic, Question, Choice, Attempt
 
 
 class ChoiceInline(admin.TabularInline):
@@ -18,6 +18,12 @@ class TopicAdmin(admin.ModelAdmin):
     list_filter = ('subject',)
 
 
+class AttemptAdmin(admin.ModelAdmin):
+    list_display = ('user', 'topic', 'score', 'total', 'taken_at')
+    list_filter = ('topic__subject', 'user')
+
+
 admin.site.register(Subject)
 admin.site.register(Topic, TopicAdmin)
 admin.site.register(Question, QuestionAdmin)
+admin.site.register(Attempt, AttemptAdmin)

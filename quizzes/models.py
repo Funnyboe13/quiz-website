@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -37,3 +38,21 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class Attempt(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='attempts')
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='attempts')
+    score = models.PositiveIntegerField()
+    total = models.PositiveIntegerField()
+    taken_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-taken_at']
+
+    @property
+    def percent(self):
+        return round(self.score / self.total * 100) if self.total else 0
+
+    def __str__(self):
+        return f"{self.user} - {self.topic} ({self.score}/{self.total})"
