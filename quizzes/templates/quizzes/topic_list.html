@@ -4,6 +4,7 @@
 <style>
     .topic-card .start-row { margin-top: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
     .topic-card .start-row span { color: var(--muted); font-size: 14px; }
+    .topic-card .progress { margin-top: 10px; font-size: 14px; font-weight: 600; color: var(--primary); }
     .mini-btn { display: inline-block; padding: 6px 14px; border-radius: 999px; background: var(--primary); color: white; text-decoration: none; font-size: 14px; font-weight: 600; }
     .mini-btn:hover { background: var(--primary-dark); }
     .mini-btn.alt { background: var(--primary-light); color: var(--primary); }
@@ -18,6 +19,9 @@
     <div class="tile topic-card">
         <h3>{{ topic.name }}</h3>
         <p>{{ total }} question{{ total|pluralize }}</p>
+        {% if topic.my_count %}
+        <p class="progress">Your best: {{ topic.my_best }}% &middot; {{ topic.my_count }} attempt{{ topic.my_count|pluralize }}</p>
+        {% endif %}
         {% if total %}
         <div class="start-row">
             <span>Start quiz:</span>

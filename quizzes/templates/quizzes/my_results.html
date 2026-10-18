@@ -3,9 +3,23 @@
 {% block title %}My results{% endblock %}
 
 {% block content %}
+<style>
+    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .stat { background: var(--card); border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(79,70,229,0.08); }
+    .stat .num { font-size: 30px; font-weight: 700; color: var(--primary); }
+    .stat .label { color: var(--muted); font-size: 14px; }
+    .results-table a.retake { color: var(--primary); font-weight: 600; text-decoration: none; }
+</style>
+
 <h2>My results</h2>
 
 {% if attempts %}
+<div class="summary">
+    <div class="stat"><div class="num">{{ count }}</div><div class="label">Quizzes taken</div></div>
+    <div class="stat"><div class="num">{{ average }}%</div><div class="label">Average score</div></div>
+    <div class="stat"><div class="num">{{ best }}%</div><div class="label">Best score</div></div>
+</div>
+
 <div class="card">
     <table class="results-table">
         <tr>
@@ -13,6 +27,7 @@
             <th>Subject</th>
             <th>Topic</th>
             <th>Score</th>
+            <th></th>
         </tr>
         {% for a in attempts %}
         <tr>
@@ -24,6 +39,7 @@
                     {{ a.score }} / {{ a.total }} ({{ a.percent }}%)
                 </span>
             </td>
+            <td><a class="retake" href="{% url 'take_quiz' a.topic.pk %}?n=20">Practise again</a></td>
         </tr>
         {% endfor %}
     </table>

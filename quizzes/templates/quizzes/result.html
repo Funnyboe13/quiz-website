@@ -3,10 +3,15 @@
 {% block title %}Results{% endblock %}
 
 {% block content %}
+<style>
+    .score .msg { font-size: 18px; font-weight: 600; margin: 4px 0 18px 0; color: var(--text); }
+</style>
+
 <div class="card score">
     <p>Your score</p>
     <div class="big">{{ score }} / {{ total }}</div>
     <p>{{ percent }}%</p>
+    <p class="msg">{{ message }}</p>
     <a class="btn" href="{% url 'take_quiz' topic.pk %}?n={{ n_param }}">Try again with new questions</a>
     <a class="link-muted" href="{% url 'topic_list' topic.subject.pk %}">Back to topics</a>
 </div>

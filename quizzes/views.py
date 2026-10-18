@@ -42,7 +42,20 @@ def subject_list(request):
 
 def topic_list(request, pk):
     subject = get_object_or_404(Subject, pk=pk)
-    topics = subject.topics.all()
+    topics = list(subject.topics.all())
+
+    stats = {}
+    if request.user.is_authenticated:
+        for a in Attempt.objects.filter(user=request.user, topic__in=topics):
+            s = stats.setdefault(a.topic_id, {'count': 0, 'best': 0})
+            s['count'] += 1
+            s['best'] = max(s['best'], a.percent)
+
+    for t in topics:
+        s = stats.get(t.pk)
+        t.my_count = s['count'] if s else 0
+        t.my_best = s['best'] if s else None
+
     return render(request, 'quizzes/topic_list.html', {'subject': subject, 'topics': topics})
 
 
@@ -52,6 +65,16 @@ def clean_size(value):
     if value in ('10', '20', 'all'):
         return value
     return str(DEFAULT_SIZE)
+
+
+def score_message(percent):
+    if percent >= 80:
+        return "Excellent work!"
+    if percent >= 70:
+        return "Good job!"
+    if percent >= 50:
+        return "Not bad. Read the explanations below to improve."
+    return "Keep practising. Read the explanations below and try again."
 
 
 @never_cache
@@ -94,6 +117,7 @@ def take_quiz(request, pk):
             'score': score,
             'total': total,
             'percent': percent,
+            'message': score_message(percent),
             'n_param': n_param,
         })
 
@@ -115,5 +139,13 @@ def take_quiz(request, pk):
 @never_cache
 @login_required
 def my_results(request):
-    attempts = Attempt.objects.filter(user=request.user).select_related('topic__subject')
-    return render(request, 'quizzes/my_results.html', {'attempts': attempts})
+    attempts = list(Attempt.objects.filter(user=request.user).select_related('topic__subject'))
+    count = len(attempts)
+    average = round(sum(a.percent for a in attempts) / count) if count else 0
+    best = max((a.percent for a in attempts), default=0)
+    return render(request, 'quizzes/my_results.html', {
+        'attempts': attempts,
+        'count': count,
+        'average': average,
+        'best': best,
+    })
