@@ -1,6 +1,15 @@
 {% extends 'quizzes/base.html' %}
 
 {% block content %}
+<style>
+    .timer-bar { position: sticky; top: 0; z-index: 50; background: white; border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(79,70,229,0.12); }
+    .timer-bar strong { font-size: 22px; color: var(--primary); font-variant-numeric: tabular-nums; }
+    .timer-bar.warn strong { color: var(--danger); }
+    .timer-bar.off strong { color: var(--muted); }
+    .timer-toggle { font-weight: normal; margin: 0; cursor: pointer; color: var(--muted); font-size: 14px; }
+    .timer-toggle input { width: auto; margin-right: 6px; }
+</style>
+
 <div class="crumbs">
     <a href="{% url 'subject_list' %}">Subjects</a> /
     <a href="{% url 'topic_list' topic.subject.pk %}">{{ topic.subject.name }}</a> /
@@ -10,7 +19,12 @@
 <p class="crumbs">{{ questions|length }} random question{{ questions|length|pluralize }} from {{ total_available }} in this topic</p>
 
 {% if questions %}
-<form method="post">
+<div class="timer-bar" id="timerBar" data-seconds="{{ time_limit }}">
+    <span>&#9201; Time left: <strong id="timeLeft">--:--</strong></span>
+    <label class="timer-toggle"><input type="checkbox" id="timerOn" checked>Timer on</label>
+</div>
+
+<form method="post" id="quizForm">
     {% csrf_token %}
     <input type="hidden" name="question_ids" value="{{ question_ids }}">
     <input type="hidden" name="n" value="{{ n_param }}">
@@ -30,6 +44,55 @@
     <button class="btn" type="submit">Submit answers</button>
     <a class="link-muted" href="{% url 'topic_list' topic.subject.pk %}">Cancel</a>
 </form>
+
+<script>
+(function () {
+    var bar = document.getElementById('timerBar');
+    var display = document.getElementById('timeLeft');
+    var toggle = document.getElementById('timerOn');
+    var form = document.getElementById('quizForm');
+    var remaining = parseInt(bar.getAttribute('data-seconds'), 10);
+    var last = Date.now();
+    var submitted = false;
+
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+    function render() {
+        var m = Math.floor(remaining / 60);
+        var s = remaining % 60;
+        display.textContent = pad(m) + ':' + pad(s);
+        bar.classList.toggle('warn', toggle.checked && remaining <= 60);
+        bar.classList.toggle('off', !toggle.checked);
+    }
+
+    function finish() {
+        if (submitted) { return; }
+        submitted = true;
+        display.textContent = "Time is up";
+        form.submit();
+    }
+
+    form.addEventListener('submit', function () { submitted = true; });
+    toggle.addEventListener('change', function () { last = Date.now(); render(); });
+
+    render();
+    setInterval(function () {
+        var now = Date.now();
+        var delta = Math.floor((now - last) / 1000);
+        if (delta < 1) { return; }
+        last += delta * 1000;
+        if (!toggle.checked || submitted) { return; }
+        remaining -= delta;
+        if (remaining <= 0) {
+            remaining = 0;
+            render();
+            finish();
+            return;
+        }
+        render();
+    }, 250);
+})();
+</script>
 {% else %}
 <div class="card">No questions in this topic yet.</div>
 {% endif %}

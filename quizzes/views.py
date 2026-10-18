@@ -11,6 +11,7 @@ from django.views.decorators.cache import never_cache
 from .models import Subject, Topic, Attempt
 
 DEFAULT_SIZE = 20
+SECONDS_PER_QUESTION = 60
 
 
 class CustomLoginView(LoginView):
@@ -133,6 +134,7 @@ def take_quiz(request, pk):
         'question_ids': ','.join(str(q.pk) for q in questions),
         'total_available': total_available,
         'n_param': n_param,
+        'time_limit': len(questions) * SECONDS_PER_QUESTION,
     })
 
 
