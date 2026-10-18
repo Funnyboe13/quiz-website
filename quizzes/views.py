@@ -1,3 +1,5 @@
+import random
+
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
@@ -5,7 +7,10 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.views import LoginView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.cache import never_cache
+
 from .models import Subject, Topic, Attempt
+
+DEFAULT_SIZE = 20
 
 
 class CustomLoginView(LoginView):
@@ -41,13 +46,25 @@ def topic_list(request, pk):
     return render(request, 'quizzes/topic_list.html', {'subject': subject, 'topics': topics})
 
 
+def clean_size(value):
+    """Return '10', '20' or 'all'. Anything else becomes the default."""
+    value = (value or '').strip().lower()
+    if value in ('10', '20', 'all'):
+        return value
+    return str(DEFAULT_SIZE)
+
+
 @never_cache
 @login_required
 def take_quiz(request, pk):
     topic = get_object_or_404(Topic, pk=pk)
-    questions = list(topic.questions.prefetch_related('choices'))
 
     if request.method == 'POST':
+        n_param = clean_size(request.POST.get('n'))
+        ids = [int(i) for i in request.POST.get('question_ids', '').split(',') if i.isdigit()]
+        found = {q.pk: q for q in topic.questions.prefetch_related('choices').filter(pk__in=ids)}
+        questions = [found[i] for i in ids if i in found]
+
         results = []
         score = 0
         for q in questions:
@@ -77,9 +94,22 @@ def take_quiz(request, pk):
             'score': score,
             'total': total,
             'percent': percent,
+            'n_param': n_param,
         })
 
-    return render(request, 'quizzes/quiz.html', {'topic': topic, 'questions': questions})
+    n_param = clean_size(request.GET.get('n'))
+    all_questions = list(topic.questions.prefetch_related('choices'))
+    total_available = len(all_questions)
+    size = total_available if n_param == 'all' else min(int(n_param), total_available)
+    questions = random.sample(all_questions, size)
+
+    return render(request, 'quizzes/quiz.html', {
+        'topic': topic,
+        'questions': questions,
+        'question_ids': ','.join(str(q.pk) for q in questions),
+        'total_available': total_available,
+        'n_param': n_param,
+    })
 
 
 @never_cache

@@ -1,14 +1,37 @@
 {% extends 'quizzes/base.html' %}
 
 {% block content %}
+<style>
+    .topic-card .start-row { margin-top: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .topic-card .start-row span { color: var(--muted); font-size: 14px; }
+    .mini-btn { display: inline-block; padding: 6px 14px; border-radius: 999px; background: var(--primary); color: white; text-decoration: none; font-size: 14px; font-weight: 600; }
+    .mini-btn:hover { background: var(--primary-dark); }
+    .mini-btn.alt { background: var(--primary-light); color: var(--primary); }
+    .mini-btn.alt:hover { background: #e0e7ff; }
+</style>
+
 <div class="crumbs"><a href="{% url 'subject_list' %}">Subjects</a> / {{ subject.name }}</div>
 <h2>{{ subject.name }} topics</h2>
 <div class="grid">
     {% for topic in topics %}
-    <a class="tile" href="{% url 'take_quiz' topic.pk %}">
+    {% with total=topic.questions.count %}
+    <div class="tile topic-card">
         <h3>{{ topic.name }}</h3>
-        <p>{{ topic.questions.count }} question{{ topic.questions.count|pluralize }}</p>
-    </a>
+        <p>{{ total }} question{{ total|pluralize }}</p>
+        {% if total %}
+        <div class="start-row">
+            <span>Start quiz:</span>
+            {% if total > 10 %}
+            <a class="mini-btn" href="{% url 'take_quiz' topic.pk %}?n=10">10</a>
+            {% endif %}
+            {% if total > 20 %}
+            <a class="mini-btn" href="{% url 'take_quiz' topic.pk %}?n=20">20</a>
+            {% endif %}
+            <a class="mini-btn alt" href="{% url 'take_quiz' topic.pk %}?n=all">All {{ total }}</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endwith %}
     {% empty %}
     <p>No topics in this subject yet.</p>
     {% endfor %}

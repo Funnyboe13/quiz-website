@@ -7,7 +7,7 @@
     <p>Your score</p>
     <div class="big">{{ score }} / {{ total }}</div>
     <p>{{ percent }}%</p>
-    <a class="btn" href="{% url 'take_quiz' topic.pk %}">Try again</a>
+    <a class="btn" href="{% url 'take_quiz' topic.pk %}?n={{ n_param }}">Try again with new questions</a>
     <a class="link-muted" href="{% url 'topic_list' topic.subject.pk %}">Back to topics</a>
 </div>
 
