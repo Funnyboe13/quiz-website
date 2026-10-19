@@ -1,10 +1,13 @@
+
 {% extends 'quizzes/base.html' %}
+{% load static %}
 
 {% block title %}Results{% endblock %}
 
 {% block content %}
 <style>
     .score .msg { font-size: 18px; font-weight: 600; margin: 4px 0 18px 0; color: var(--text); }
+    .diagram { display: block; width: 100%; max-width: 560px; height: auto; margin: 6px 0 16px 0; border: 1px solid var(--border); border-radius: 8px; background: white; }
 </style>
 
 <div class="card score">
@@ -20,6 +23,9 @@
 {% for r in results %}
 <div class="card review {% if r.is_right %}right{% else %}wrong{% endif %}">
     <h3>{{ forloop.counter }}. {{ r.question.text }}</h3>
+    {% if r.question.diagram %}
+    <img class="diagram" src="{% static 'quizzes/diagrams/'|add:r.question.diagram %}" alt="Diagram for question {{ forloop.counter }}">
+    {% endif %}
     {% if r.is_right %}
         <p class="tag-right">Correct: {{ r.correct.text }}</p>
     {% else %}

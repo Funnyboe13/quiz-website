@@ -1,5 +1,7 @@
 import csv
+from pathlib import Path
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
@@ -11,15 +13,23 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('csv_file', type=str, help="Path to the CSV file")
+        parser.add_argument(
+            '--update',
+            action='store_true',
+            help="Replace the choices, explanation and diagram of questions that already exist",
+        )
 
     def handle(self, *args, **options):
         path = options['csv_file']
+        update = options['update']
+        diagram_dir = Path(settings.BASE_DIR) / 'quizzes' / 'static' / 'quizzes' / 'diagrams'
         try:
             f = open(path, newline='', encoding='utf-8-sig')
         except FileNotFoundError:
             raise CommandError(f"File not found: {path}")
 
         added = 0
+        updated = 0
         skipped = 0
         errors = 0
 
@@ -37,9 +47,11 @@ class Command(BaseCommand):
                 ]
                 correct = (row.get('correct') or '').strip().upper()
                 explanation = (row.get('explanation') or '').strip()
+                diagram = (row.get('diagram') or '').strip()
 
                 if not (subject_name and topic_name and text and all(options_list)):
-                    self.stdout.write(self.style.ERROR(f"Line {line_no}: missing subject, topic, question or an option"))
+                    self.stdout.write(self.style.ERROR(
+                        f"Line {line_no}: missing subject, topic, question or an option"))
                     errors += 1
                     continue
 
@@ -47,6 +59,10 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.ERROR(f"Line {line_no}: 'correct' must be A, B, C or D"))
                     errors += 1
                     continue
+
+                if diagram and not (diagram_dir / diagram).exists():
+                    self.stdout.write(self.style.WARNING(
+                        f"Line {line_no}: diagram file '{diagram}' was not found in {diagram_dir}"))
 
                 with transaction.atomic():
                     subject = Subject.objects.filter(name__iexact=subject_name).first()
@@ -57,16 +73,27 @@ class Command(BaseCommand):
                     if topic is None:
                         topic = Topic.objects.create(subject=subject, name=topic_name)
 
-                    if Question.objects.filter(topic=topic, text=text).exists():
+                    question = Question.objects.filter(topic=topic, text=text).first()
+                    if question is not None and not update:
                         skipped += 1
                         continue
 
-                    question = Question.objects.create(topic=topic, text=text, explanation=explanation)
+                    if question is None:
+                        question = Question.objects.create(
+                            topic=topic, text=text, explanation=explanation, diagram=diagram)
+                        added += 1
+                    else:
+                        question.explanation = explanation
+                        question.diagram = diagram
+                        question.save()
+                        question.choices.all().delete()
+                        updated += 1
+
                     correct_index = 'ABCD'.index(correct)
                     Choice.objects.bulk_create([
                         Choice(question=question, text=option_text, is_correct=(i == correct_index))
                         for i, option_text in enumerate(options_list)
                     ])
-                    added += 1
 
-        self.stdout.write(self.style.SUCCESS(f"Added {added} question(s), skipped {skipped} duplicate(s), {errors} error(s)."))
+        self.stdout.write(self.style.SUCCESS(
+            f"Added {added}, updated {updated}, skipped {skipped} duplicate(s), {errors} error(s)."))

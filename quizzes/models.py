@@ -1,3 +1,4 @@
+
 from django.conf import settings
 from django.db import models
 
@@ -25,6 +26,11 @@ class Topic(models.Model):
 class Question(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='questions')
     text = models.TextField()
+    diagram = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Optional. File name of a picture in quizzes/static/quizzes/diagrams/, for example parallel_two.png",
+    )
     explanation = models.TextField(blank=True, help_text="Shown after answering (optional)")
 
     def __str__(self):

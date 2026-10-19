@@ -1,4 +1,5 @@
 {% extends 'quizzes/base.html' %}
+{% load static %}
 
 {% block content %}
 <style>
@@ -8,6 +9,7 @@
     .timer-bar.off strong { color: var(--muted); }
     .timer-toggle { font-weight: normal; margin: 0; cursor: pointer; color: var(--muted); font-size: 14px; }
     .timer-toggle input { width: auto; margin-right: 6px; }
+    .diagram { display: block; width: 100%; max-width: 560px; height: auto; margin: 6px 0 16px 0; border: 1px solid var(--border); border-radius: 8px; background: white; }
 </style>
 
 <div class="crumbs">
@@ -32,6 +34,9 @@
         {% for q in questions %}
         <div class="question">
             <h3>{{ forloop.counter }}. {{ q.text }}</h3>
+            {% if q.diagram %}
+            <img class="diagram" src="{% static 'quizzes/diagrams/'|add:q.diagram %}" alt="Diagram for question {{ forloop.counter }}">
+            {% endif %}
             {% for c in q.choices.all %}
             <label class="option">
                 <input type="radio" name="question_{{ q.pk }}" value="{{ c.pk }}">

@@ -1,3 +1,4 @@
+
 from django.contrib import admin
 from .models import Subject, Topic, Question, Choice, Attempt
 
@@ -9,7 +10,7 @@ class ChoiceInline(admin.TabularInline):
 
 class QuestionAdmin(admin.ModelAdmin):
     inlines = [ChoiceInline]
-    list_display = ('text', 'topic')
+    list_display = ('text', 'topic', 'diagram')
     list_filter = ('topic__subject', 'topic')
 
 
